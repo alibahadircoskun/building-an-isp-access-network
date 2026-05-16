@@ -2,41 +2,7 @@
 
 A containerlab-based simulation of a broadband access network. It puts PPPoE subscriber access, Deep Packet Inspection, and TR-069 remote management together in one topology you can actually run and follow.
 
-```
-                          ┌─────────────┐
-                          │   upstream  │ AS 65000
-                          │  (8.8.8.8)  │
-                          └──────┬──────┘
-                        eBGP     │ eth1
-                          ┌──────┴──────┐
-                          │    core     │ AS 65001
-                          │ BGP + OSPF  │
-                          └──────┬──────┘
-                        OSPF     │ eth2
-                          ┌──────┴──────┐
-                          │     bng     │ accel-ppp (PPPoE)
-                          │             │ FRR (OSPF)
-                          └──────┬──────┘
-                        PPPoE    │ eth2
-                          ┌──────┴──────┐
-                          │     dpi     │ Linux bridge
-                          │  (ntopng)   │ eth1 ↔ eth2/eth3
-                          └──────┬──────┘
-                    ┌────────────┴────────────┐
-               eth2 │                    eth3 │
-            ┌───────┴──────┐       ┌──────────┴───┐
-            │    cpe-1     │       │    cpe-2     │
-            │  pppoe+CWMP  │       │  pppoe+CWMP  │
-            └──────┬───────┘       └──────┬───────┘
-              eth2 │                 eth2 │
-            ┌──────┴───────┐       ┌──────┴───────┐
-            │    sub-1     │       │    sub-2     │
-            │ 192.168.1.2  │       │ 192.168.2.2  │
-            └──────────────┘       └──────────────┘
-
-            GenieACS (ACS) ←──────── TR-069 / CWMP
-            MongoDB        ←──────── (via BNG DNAT)
-```
+![Topology](artifacts/topology.png)
 
 ---
 
