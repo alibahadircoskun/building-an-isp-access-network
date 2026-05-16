@@ -1,0 +1,166 @@
+name: isp-dpi-acs
+
+mgmt:
+  network: clab-isp-dpi-acs-mgmt
+  ipv4-subnet: 172.31.255.0/24
+
+topology:
+  defaults:
+    kind: linux
+    image-pull-policy: Always
+    restart-policy: no
+
+  nodes:
+    upstream:
+      image: quay.io/frrouting/frr:10.6.1
+      mgmt-ipv4: 172.31.255.2
+      binds:
+        - ../configs/upstream/frr.conf:/etc/frr/frr.conf:ro
+        - ../configs/upstream/daemons:/etc/frr/daemons:ro
+        - ../configs/upstream/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      cmd: "sh -lc 'sh /startup/start.sh'"
+      healthcheck:
+        test: ["CMD-SHELL", "vtysh -c 'show ip bgp summary' >/dev/null 2>&1"]
+        start-period: 20
+        interval: 10
+        timeout: 5
+        retries: 6
+
+    core:
+      image: quay.io/frrouting/frr:10.6.1
+      mgmt-ipv4: 172.31.255.4
+      binds:
+        - ../configs/core/frr.conf:/etc/frr/frr.conf:ro
+        - ../configs/core/daemons:/etc/frr/daemons:ro
+        - ../configs/core/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      cmd: "sh -lc 'sh /startup/start.sh'"
+
+    bng:
+      image: ubuntu:22.04
+      mgmt-ipv4: 172.31.255.3
+      cap-add:
+        - NET_ADMIN
+        - NET_RAW
+      devices:
+        - /dev/ppp
+      binds:
+        - ../configs/bng/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+        - ../configs/bng/accel-ppp.conf:/etc/accel-ppp.conf:ro
+        - ../configs/bng/frr.conf:/etc/frr/frr.conf
+        - ../configs/bng/daemons:/etc/frr/daemons
+        - ../configs/bng/show.sh:/usr/local/bin/show-bng:ro
+      cmd: "bash -lc 'bash /startup/start.sh'"
+      healthcheck:
+        test: ["CMD-SHELL", "bash -lc 'pgrep accel-pppd >/dev/null && pgrep ospfd >/dev/null'"]
+        start-period: 30
+        interval: 10
+        timeout: 5
+        retries: 12
+
+    dpi:
+      image: ubuntu:22.04
+      mgmt-ipv4: 172.31.255.5
+      cap-add:
+        - NET_ADMIN
+        - NET_RAW
+      binds:
+        - ../configs/dpi/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+        - ../configs/dpi/ntopng.conf:/etc/ntopng/ntopng.conf
+      cmd: "bash -lc 'bash /startup/start.sh'"
+      ports:
+        - "20031:3001"
+
+    cpe-1:
+      kind: linux
+      image: python:3.12-alpine
+      mgmt-ipv4: 172.31.255.22
+      cap-add:
+        - NET_ADMIN
+        - NET_RAW
+      devices:
+        - /dev/ppp
+      binds:
+        - ../configs/cpe1/start.sh:/startup/start.sh:ro
+        - ../configs/common/cpe-common.sh:/startup/cpe-common.sh:ro
+        - ../configs/common/cwmp-client.py:/startup/cwmp-client.py:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      cmd: "sh -lc /startup/start.sh"
+
+    cpe-2:
+      kind: linux
+      image: python:3.12-alpine
+      mgmt-ipv4: 172.31.255.23
+      cap-add:
+        - NET_ADMIN
+        - NET_RAW
+      devices:
+        - /dev/ppp
+      binds:
+        - ../configs/cpe2/start.sh:/startup/start.sh:ro
+        - ../configs/common/cpe-common.sh:/startup/cpe-common.sh:ro
+        - ../configs/common/cwmp-client.py:/startup/cwmp-client.py:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      cmd: "sh -lc /startup/start.sh"
+
+    sub-1:
+      image: alpine:3.20
+      mgmt-ipv4: 172.31.255.7
+      binds:
+        - ../configs/sub1/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      cmd: "sh -lc /startup/start.sh"
+
+    sub-2:
+      image: alpine:3.20
+      mgmt-ipv4: 172.31.255.9
+      binds:
+        - ../configs/sub2/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      cmd: "sh -lc /startup/start.sh"
+
+    mongo:
+      image: mongo:6.0.14
+      mgmt-ipv4: 172.31.255.6
+      binds:
+        - ../configs/mongo/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      cmd: "bash -lc 'bash /startup/start.sh'"
+      healthcheck:
+        test: ["CMD-SHELL", "mongosh --quiet --eval \"db.adminCommand('ping').ok\" | grep 1"]
+        start-period: 20
+        interval: 10
+        timeout: 5
+        retries: 12
+
+    genieacs:
+      image: node:20-bookworm
+      mgmt-ipv4: 172.31.255.8
+      binds:
+        - ../configs/genieacs/start.sh:/startup/start.sh:ro
+        - ../configs/common/ssh-common.sh:/startup/ssh-common.sh:ro
+      env:
+        GENIEACS_MONGODB_CONNECTION_URL: mongodb://mongo:27017/genieacs
+        GENIEACS_CWMP_PORT: "7547"
+        GENIEACS_NBI_PORT: "7557"
+        GENIEACS_FS_PORT: "7567"
+        GENIEACS_UI_PORT: "3000"
+        GENIEACS_UI_JWT_SECRET: "change-me-to-random-64chars"
+      cmd: "bash -lc /startup/start.sh"
+      ports:
+        - "20030:3000"
+        - "20057:7557"
+        - "20067:7567"
+        - "20047:7547"
+
+  links:
+    - endpoints: ["upstream:eth1", "core:eth1"]
+    - endpoints: ["core:eth2", "bng:eth1"]
+    - endpoints: ["bng:eth2", "dpi:eth1"]
+    - endpoints: ["dpi:eth2", "cpe-1:eth1"]
+    - endpoints: ["dpi:eth3", "cpe-2:eth1"]
+    - endpoints: ["cpe-1:eth2", "sub-1:eth1"]
+    - endpoints: ["cpe-2:eth2", "sub-2:eth1"]

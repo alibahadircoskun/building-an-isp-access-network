@@ -1,0 +1,82 @@
+{
+  "freeTextAnnotations": [],
+  "freeShapeAnnotations": [],
+  "trafficRateAnnotations": [],
+  "groupStyleAnnotations": [],
+  "networkNodeAnnotations": [],
+  "nodeAnnotations": [
+    {
+      "id": "upstream",
+      "position": {
+        "x": -160,
+        "y": 300
+      }
+    },
+    {
+      "id": "core",
+      "position": {
+        "x": 0,
+        "y": 300
+      }
+    },
+    {
+      "id": "bng",
+      "position": {
+        "x": 140,
+        "y": 300
+      }
+    },
+    {
+      "id": "dpi",
+      "position": {
+        "x": 300,
+        "y": 300
+      }
+    },
+    {
+      "id": "cpe-1",
+      "position": {
+        "x": 460,
+        "y": 420
+      }
+    },
+    {
+      "id": "cpe-2",
+      "position": {
+        "x": 460,
+        "y": 200
+      }
+    },
+    {
+      "id": "sub-1",
+      "position": {
+        "x": 600,
+        "y": 500
+      }
+    },
+    {
+      "id": "sub-2",
+      "position": {
+        "x": 600,
+        "y": 120
+      }
+    },
+    {
+      "id": "mongo",
+      "position": {
+        "x": 600,
+        "y": 280
+      }
+    },
+    {
+      "id": "genieacs",
+      "position": {
+        "x": 600,
+        "y": 340
+      }
+    }
+  ],
+  "edgeAnnotations": [],
+  "aliasEndpointAnnotations": [],
+  "viewerSettings": {}
+}

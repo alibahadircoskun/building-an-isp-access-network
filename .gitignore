@@ -1,0 +1,11 @@
+# Video folder — not for sharing
+video/
+
+# containerlab generated state (TLS certs, ansible inventory, topology data)
+topology/clab-isp-dpi-acs/
+
+# Python bytecode
+configs/common/__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
