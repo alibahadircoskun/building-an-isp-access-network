@@ -8,10 +8,10 @@ A containerlab-based simulation of a broadband access network. It puts PPPoE sub
 
 ## What this lab covers
 
-- **PPPoE / BNG** — subscribers come online through accel-ppp running on the BNG node. Each CPE discovers the access concentrator, negotiates a PPP session, gets a 100.64.0.x address, and NATs its LAN behind it.
-- **Routing** — the BNG advertises the subscriber pool into OSPF. The core node runs eBGP toward upstream and OSPF toward the BNG. The upstream node holds the lab's "internet" (8.8.8.8/32).
-- **DPI** — the DPI node is an inline Linux bridge with ntopng and nDPI watching all flows. Traffic from both subscriber nodes crosses it, including the CWMP management traffic from the CPEs.
-- **ACS / TR-069** — each CPE runs a Python CWMP client that sends Inform messages to GenieACS on boot and periodically. GenieACS collects parameters and can push RPCs back to the device: `SetParameterValues`, `Download`, `Reboot`, `FactoryReset`.
+- **PPPoE / BNG**: subscribers come online through accel-ppp running on the BNG node. Each CPE discovers the access concentrator, negotiates a PPP session, gets a 100.64.0.x address, and NATs its LAN behind it.
+- **Routing**: the BNG advertises the subscriber pool into OSPF. The core node runs eBGP toward upstream and OSPF toward the BNG. The upstream node holds the lab's "internet" (8.8.8.8/32).
+- **DPI**: the DPI node is an inline Linux bridge with ntopng and nDPI watching all flows. Traffic from both subscriber nodes crosses it, including the CWMP management traffic from the CPEs.
+- **ACS / TR-069**: each CPE runs a Python CWMP client that sends Inform messages to GenieACS on boot and periodically. GenieACS collects parameters and can push RPCs back to the device: `SetParameterValues`, `Download`, `Reboot`, `FactoryReset`.
 
 ---
 
@@ -62,8 +62,8 @@ clab destroy -t isp-dpi-acs.clab.yml
 | dpi       | 172.31.255.5  | ntopng transparent bridge        |
 | genieacs  | 172.31.255.8  | TR-069 ACS                       |
 | mongo     | 172.31.255.6  | MongoDB for GenieACS             |
-| cpe-1     | 172.31.255.22 | CPE 1 — PPPoE cpe1@isp.lab       |
-| cpe-2     | 172.31.255.23 | CPE 2 — PPPoE cpe2@isp.lab       |
+| cpe-1     | 172.31.255.22 | CPE 1: PPPoE cpe1@isp.lab       |
+| cpe-2     | 172.31.255.23 | CPE 2: PPPoE cpe2@isp.lab       |
 | sub-1     | 172.31.255.7  | Subscriber behind cpe-1          |
 | sub-2     | 172.31.255.9  | Subscriber behind cpe-2          |
 
@@ -106,13 +106,13 @@ docker exec clab-isp-dpi-acs-cpe-1 ip addr show ppp0
 docker exec clab-isp-dpi-acs-cpe-1 ip route
 ```
 
-### DPI — live flows
+### DPI: live flows
 
 Open http://localhost:20031 and go to **Flows**. sub-1 and sub-2 generate traffic continuously: ICMP, DNS, HTTP, TLS, and iperf3. ntopng classifies them using nDPI.
 
 The CWMP traffic from the CPEs also crosses the DPI bridge (TCP 7547), so you can see management and subscriber flows in the same view.
 
-### GenieACS — device inventory
+### GenieACS: device inventory
 
 Open http://localhost:20030. Both CPEs should appear after they boot and send their first Inform.
 
@@ -155,8 +155,8 @@ The firmware file is pre-loaded into GenieACS at startup. The CPE fetches it fro
 | Service              | Username     | Password   |
 |----------------------|--------------|------------|
 | SSH (all nodes)      | admin        | labpass     |
-| PPPoE — cpe-1        | cpe1@isp.lab | test        |
-| PPPoE — cpe-2        | cpe2@isp.lab | test        |
+| PPPoE: cpe-1        | cpe1@isp.lab | test        |
+| PPPoE: cpe-2        | cpe2@isp.lab | test        |
 | CWMP conn-req cpe-1  | cwmp         | cwmp-cpe1   |
 | CWMP conn-req cpe-2  | cwmp         | cwmp-cpe2   |
 
@@ -164,7 +164,7 @@ The firmware file is pre-loaded into GenieACS at startup. The CPE fetches it fro
 
 ## CWMP traffic path
 
-CPEs are configured to reach the ACS at `http://100.64.0.1:7547/` — the BNG's subscriber-side address. This routes CWMP through the DPI bridge so ntopng can see it alongside subscriber data.
+CPEs are configured to reach the ACS at `http://100.64.0.1:7547/`: the BNG's subscriber-side address. This routes CWMP through the DPI bridge so ntopng can see it alongside subscriber data.
 
 The BNG DNATs that address and port to the actual GenieACS container at `172.31.255.8:7547`.
 
